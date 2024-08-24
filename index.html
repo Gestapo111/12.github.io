@@ -7,13 +7,29 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+        h1 {
+            color: #333;
         }
         .quiz-container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
             display: none;
         }
         .question {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .options {
             list-style-type: none;
@@ -22,40 +38,65 @@
         .options li {
             margin-bottom: 10px;
         }
-        #timer {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
+        button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
         }
-        #timer.green {
-            color: green;
+        button:hover {
+            background-color: #218838;
         }
-        #timer.orange {
-            color: orange;
+        #results {
+            margin-top: 20px;
+            font-size: 18px;
         }
-        #timer.red {
-            color: red;
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
         }
+        .input-field {
+            margin-bottom: 10px;
+        }
+        .input-field label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-field input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
             z-index: 1;
-            padding-top: 100px;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
         }
         .modal-content {
             background-color: #fefefe;
-            margin: auto;
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
             max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         .close {
             color: #aaa;
@@ -69,35 +110,80 @@
             text-decoration: none;
             cursor: pointer;
         }
+        /* Cronómetro flotante */
+        #timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: green;
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+        /* Estilo para los números de preguntas incorrectas */
+        .incorrect-answers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .incorrect-answers div {
+            width: 18%;
+            text-align: center;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 5px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-
-<div id="infoModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Ingrese su NIE para comenzar la evaluación</h2>
-        <input type="text" id="nie" placeholder="Ingrese su NIE">
-        <button id="startQuiz">Iniciar Evaluación</button>
+    <h1>Evaluación Unidad 12: Legislación Ambiental</h1>
+    <div class="quiz-container">
+        <div id="quiz"></div>
+        <button id="submit">Enviar respuestas</button>
     </div>
-</div>
+    <footer>
+        &copy; Derechos Reservados Prof. Alberto Sanchez
+    </footer>
 
-<div class="quiz-container">
-    <div id="timer" class="green">30:00</div>
-    <div id="quiz"></div>
-    <button id="submit">Enviar Evaluación</button>
-</div>
-
-<div id="resultModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Resultado de la Evaluación</h2>
-        <p id="modalDetails"></p>
-        <p id="modalIncorrectAnswers"></p>
+    <!-- Modal para solicitar nombre y NIE -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <h2>Por favor, ingresa tus datos</h2>
+            <div class="input-field">
+                <label for="fullname">Nombre completo:</label>
+                <input type="text" id="fullname" required>
+            </div>
+            <div class="input-field">
+                <label for="nie">NIE:</label>
+                <input type="text" id="nie" required>
+            </div>
+            <button id="startQuiz">Comenzar Evaluación</button>
+        </div>
     </div>
-</div>
 
-<script>
+    <!-- Modal de resultados -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Resultados de la Evaluación</h2>
+            <p id="modalName"></p>
+            <p id="modalNIE"></p>
+            <h3>Preguntas incorrectas:</h3>
+            <div id="modalIncorrectAnswers" class="incorrect-answers"></div>
+            <h3>Detalles:</h3>
+            <p id="modalDetails"></p>
+            <h3>Intentos de manipulación detectados:</h3>
+            <p id="manipulationCount"></p>
+            <h3>Reintentos:</h3>
+            <p id="attemptCount"></p>
+        </div>
+    </div>
+
+    <div id="timer">30:00</div>
+
+    <script>
         const quizData = [
             {
                 indicator: "Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.",
@@ -118,15 +204,6 @@
                             { text: "Facilitar la urbanización en hábitats críticos.", correct: false },
                             { text: "Permitir la caza regulada de especies amenazadas.", correct: false },
                             { text: "Promover el turismo masivo en áreas silvestres.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Cómo contribuye la Ley de Conservación de la Vida Silvestre a la protección de los ecosistemas?",
-                        answers: [
-                            { text: "Estableciendo áreas protegidas y regulando el uso de los recursos naturales.", correct: true },
-                            { text: "Facilitando la explotación de recursos en áreas protegidas.", correct: false },
-                            { text: "Permitiendo la deforestación en zonas silvestres.", correct: false },
-                            { text: "Promoviendo la agricultura intensiva en áreas naturales.", correct: false }
                         ]
                     },
                     {
@@ -187,15 +264,6 @@
                             { text: "Permite la caza y recolección indiscriminada en bosques protegidos.", correct: false },
                             { text: "Facilita la conversión de bosques en áreas agrícolas.", correct: false }
                         ]
-                    },
-                    {
-                        question: "¿Cuál es el propósito principal de la Ley Forestal en El Salvador?",
-                        answers: [
-                            { text: "Promover la conservación y manejo sostenible de los recursos forestales.", correct: true },
-                            { text: "Facilitar la tala masiva para el desarrollo industrial.", correct: false },
-                            { text: "Permitir la deforestación para la expansión agrícola.", correct: false },
-                            { text: "Fomentar la urbanización en zonas boscosas.", correct: false }
-                        ]
                     }
                 ]
             },
@@ -230,20 +298,11 @@
                         ]
                     },
                     {
-                        question: "¿Cuál es el objetivo principal de la Ley de Áreas Naturales Protegidas?",
-                        answers: [
-                            { text: "Proteger y conservar la biodiversidad en áreas designadas.", correct: true },
-                            { text: "Promover la explotación de recursos naturales en áreas protegidas.", correct: false },
-                            { text: "Facilitar el acceso libre a las áreas protegidas para actividades recreativas.", correct: false },
-                            { text: "Permitir la urbanización controlada en zonas protegidas.", correct: false }
-                        ]
-                    },
-                    {
                         question: "¿Qué actividades están reguladas por la Ley de Áreas Naturales Protegidas?",
                         answers: [
-                            { text: "Caza, pesca y explotación forestal dentro de las áreas protegidas.", correct: false },
+                            { text: "Caza, pesca y explotación forestal dentro de las áreas protegidas.", correct: true },
                             { text: "Construcción de infraestructuras para el turismo masivo.", correct: false },
-                            { text: "Investigación científica y actividades educativas.", correct: true },
+                            { text: "Investigación científica y actividades educativas.", correct: false },
                             { text: "Agricultura intensiva y minería a cielo abierto.", correct: false }
                         ]
                     }
@@ -268,15 +327,6 @@
                             { text: "Aumenta la deforestación para la construcción de infraestructura.", correct: false },
                             { text: "Limita el acceso de las especies a sus hábitats naturales.", correct: false },
                             { text: "Promueve la urbanización de áreas protegidas.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Cuál es el propósito principal del Corredor Biológico Mesoamericano?",
-                        answers: [
-                            { text: "Conectar áreas protegidas para facilitar el movimiento de especies.", correct: true },
-                            { text: "Fomentar la agricultura intensiva en la región.", correct: false },
-                            { text: "Promover el desarrollo urbano en zonas rurales.", correct: false },
-                            { text: "Facilitar la minería a gran escala en áreas biodiversas.", correct: false }
                         ]
                     },
                     {
@@ -312,15 +362,6 @@
                         ]
                     },
                     {
-                        question: "¿Qué principio fundamental establece el Título I de la Ley de Medio Ambiente?",
-                        answers: [
-                            { text: "El derecho de toda persona a un ambiente sano.", correct: true },
-                            { text: "La obligación de las empresas de explotar los recursos naturales.", correct: false },
-                            { text: "La responsabilidad de los ciudadanos de reciclar obligatoriamente.", correct: false },
-                            { text: "La prohibición de actividades agrícolas en áreas urbanas.", correct: false }
-                        ]
-                    },
-                    {
                         question: "¿Cuál es el principal objetivo del Título I de la Ley de Medio Ambiente en El Salvador?",
                         answers: [
                             { text: "Proteger, conservar y restaurar el medio ambiente.", correct: true },
@@ -348,161 +389,226 @@
                         ]
                     }
                 ]
-            },
-            {
-                indicator: "Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.",
-                questions: [
-                    {
-                        question: "¿Qué rol juega la educación ambiental en las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
-                        answers: [
-                            { text: "Es fundamental para fomentar la conciencia y participación en la conservación.", correct: true },
-                            { text: "Es opcional y se enfoca solo en la promoción del turismo.", correct: false },
-                            { text: "Se limita a la capacitación de guías turísticos.", correct: false },
-                            { text: "Es irrelevante para las actividades de conservación.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Cuál es la función principal del Servicio de Parques Nacionales y Vida Silvestre?",
-                        answers: [
-                            { text: "Proteger y gestionar las áreas protegidas y la vida silvestre.", correct: true },
-                            { text: "Promover la caza deportiva en áreas protegidas.", correct: false },
-                            { text: "Facilitar el desarrollo urbano en parques nacionales.", correct: false },
-                            { text: "Permitir la explotación de recursos en reservas naturales.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Cómo se financian las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
-                        answers: [
-                            { text: "A través de fondos públicos, donaciones y tarifas de entrada a los parques.", correct: true },
-                            { text: "Exclusivamente a través de la venta de terrenos protegidos.", correct: false },
-                            { text: "Principalmente mediante la extracción de recursos naturales.", correct: false },
-                            { text: "Únicamente a través de subsidios agrícolas.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Qué actividades regula el Servicio de Parques Nacionales y Vida Silvestre?",
-                        answers: [
-                            { text: "Caza, pesca, turismo y conservación en áreas protegidas.", correct: true },
-                            { text: "Urbanización y desarrollo industrial en parques nacionales.", correct: false },
-                            { text: "Agricultura intensiva en reservas naturales.", correct: false },
-                            { text: "Minería a gran escala en áreas silvestres.", correct: false }
-                        ]
-                    },
-                    {
-                        question: "¿Cómo contribuye el Servicio de Parques Nacionales y Vida Silvestre a la conservación de la biodiversidad?",
-                        answers: [
-                            { text: "Implementando programas de protección y manejo sostenible de especies y hábitats.", correct: true },
-                            { text: "Facilitando la extracción de recursos en áreas protegidas.", correct: false },
-                            { text: "Promoviendo la expansión agrícola en zonas protegidas.", correct: false },
-                            { text: "Permitiendo la caza sin restricciones en parques nacionales.", correct: false }
-                        ]
-                    }
-                ]
             }
         ];
 
-         const authorizedNIEs = [
-        "4267837", "3850952", "3851018", "5032035", "19806181",
-        "6297536", "2608724", "6262810", "4267838", "20162435",
-        "3850923", "19806209", "4267828", "3850942"
-    ];
+        const authorizedNIEs = [
+            "4267837", "3850952", "3851018", "5032035", "19806181", "6297536", 
+            "2608724", "6262810", "4267838", "20162435", "3850923", "19806209", 
+            "4267828", "3850942"
+        ];
 
-    function displayQuiz() {
-        const quizContainer = document.getElementById('quiz');
-        quizContainer.innerHTML = '';
-        quizData.forEach((indicatorData, index) => {
-            let indicatorElement = document.createElement('h3');
-            indicatorElement.textContent = indicatorData.indicator;
-            quizContainer.appendChild(indicatorElement);
-            indicatorData.questions.forEach((q, i) => {
-                let questionElement = document.createElement('div');
-                questionElement.className = 'question';
-                questionElement.innerHTML = `<strong>${i + 1}. ${q.question}</strong>`;
-                let optionsElement = document.createElement('ul');
-                optionsElement.className = 'options';
-                q.answers.forEach((answer, j) => {
-                    let optionElement = document.createElement('li');
-                    optionElement.innerHTML = `<input type="radio" name="q${index}_${i}" value="${answer.correct}"> ${answer.text}`;
-                    optionsElement.appendChild(optionElement);
+        let attempt = 0;
+        const maxAttempts = 2;
+        const evaluationName = "Evaluación Unidad 12: Legislación Ambiental";
+        let timer;
+        let timeLeft = 1800; // 30 minutos en segundos
+        let startTime;
+        let manipulationCount = 0;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function loadQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = '';
+
+            // Shuffle questions and answers
+            quizData.forEach((section) => {
+                const indicatorTitle = document.createElement('h2');
+                indicatorTitle.innerText = section.indicator;
+                quizContainer.appendChild(indicatorTitle);
+
+                const shuffledQuestions = shuffle([...section.questions]);
+
+                shuffledQuestions.forEach((data, index) => {
+                    const questionContainer = document.createElement('div');
+                    questionContainer.className = 'question';
+
+                    const questionTitle = document.createElement('h3');
+                    questionTitle.innerText = `${index + 1}. ${data.question}`;
+                    questionContainer.appendChild(questionTitle);
+
+                    const optionsList = document.createElement('ul');
+                    optionsList.className = 'options';
+
+                    shuffle(data.answers).forEach(answer => {
+                        const option = document.createElement('li');
+                        const optionLabel = document.createElement('label');
+                        const optionInput = document.createElement('input');
+                        optionInput.type = 'radio';
+                        optionInput.name = `question${index}`;
+                        optionInput.value = answer.correct;
+                        optionLabel.appendChild(optionInput);
+                        optionLabel.appendChild(document.createTextNode(answer.text));
+                        option.appendChild(optionLabel);
+                        optionsList.appendChild(option);
+                    });
+
+                    questionContainer.appendChild(optionsList);
+                    quizContainer.appendChild(questionContainer);
                 });
-                questionElement.appendChild(optionsElement);
-                quizContainer.appendChild(questionElement);
             });
-        });
-    }
+        }
 
-    function initQuiz() {
-        document.getElementById('startQuiz').addEventListener('click', () => {
-            const nie = document.getElementById('nie').value;
+        function submitQuiz() {
+            const fullname = document.getElementById('fullname').value.trim();
+            const nie = document.getElementById('nie').value.trim();
+
+            if (!fullname || !nie) {
+                alert('Por favor, ingresa tu nombre completo y NIE.');
+                return;
+            }
+
+            if (attempt >= maxAttempts) {
+                alert('Has alcanzado el número máximo de intentos.');
+                return;
+            }
+
+            const answers = document.querySelectorAll('input[type="radio"]:checked');
+            let incorrectAnswers = [];
+
+            let questionCount = 0;
+
+            quizData.forEach((section) => {
+                section.questions.forEach((data, index) => {
+                    const selected = answers[questionCount] ? answers[questionCount].value === 'true' : null;
+                    if (selected === false || selected === null) {
+                        incorrectAnswers.push(questionCount + 1);
+                    }
+                    questionCount++;
+                });
+            });
+
+            // Mostrar los resultados en el modal
+            document.getElementById('modalName').innerText = `Nombre: ${fullname}`;
+            document.getElementById('modalNIE').innerText = `NIE: ${nie}`;
+            const modalIncorrectAnswers = document.getElementById('modalIncorrectAnswers');
+            modalIncorrectAnswers.innerHTML = '';
+            incorrectAnswers.forEach((questionNumber) => {
+                const div = document.createElement('div');
+                div.innerText = `Pregunta ${questionNumber}`;
+                modalIncorrectAnswers.appendChild(div);
+            });
+
+            // Mostrar detalles adicionales
+            const endTime = new Date();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+            const currentDate = new Date();
+            const modalDetails = document.getElementById('modalDetails');
+            modalDetails.innerHTML = `
+                Fecha: ${currentDate.toLocaleDateString()}<br>
+                Hora: ${currentDate.toLocaleTimeString()}<br>
+                Tiempo en realizar la prueba: ${timeTaken} segundos<br>
+                Nombre de la unidad: ${evaluationName}<br>
+                Calificación: ${((questionCount - incorrectAnswers.length) / questionCount * 10).toFixed(2)}/10
+            `;
+
+            // Mostrar intentos de manipulación
+            document.getElementById('manipulationCount').innerText = `Intentos de manipulación detectados: ${manipulationCount}`;
+
+            // Mostrar contador de reintentos
+            document.getElementById('attemptCount').innerText = `Reintentos: ${attempt + 1}`;
+
+            const modal = document.getElementById('resultModal');
+            modal.style.display = 'block';
+
+            attempt++;
+            if (attempt >= maxAttempts) {
+                alert('Has alcanzado el número máximo de intentos.');
+                // Aquí puedes agregar código para bloquear la MAC o deshabilitar la evaluación
+            }
+        }
+
+        document.getElementById('submit').addEventListener('click', submitQuiz);
+
+        document.getElementById('startQuiz').addEventListener('click', function() {
+            const nie = document.getElementById('nie').value.trim();
             if (!authorizedNIEs.includes(nie)) {
-                alert("NIE no autorizado.");
+                alert('NIE no autorizado.');
                 return;
             }
             document.querySelector('.quiz-container').style.display = 'block';
             document.getElementById('infoModal').style.display = 'none';
+            startTime = new Date();
             startTimer();
+            loadQuiz();
         });
-    }
 
-    document.getElementById('submit').addEventListener('click', () => {
-        clearInterval(timerInterval);
-        let correctAnswers = 0;
-        quizData.forEach((indicatorData, index) => {
-            indicatorData.questions.forEach((q, i) => {
-                const selectedAnswer = document.querySelector(`input[name="q${index}_${i}"]:checked`);
-                if (selectedAnswer && selectedAnswer.value === "true") {
-                    correctAnswers++;
-                }
-            });
-        });
-        const totalQuestions = quizData.reduce((acc, curr) => acc + curr.questions.length, 0);
-        const score = (correctAnswers / totalQuestions) * 10;
-        document.getElementById('modalDetails').textContent = `Tu calificación es: ${score.toFixed(2)} sobre 10`;
-        document.getElementById('modalIncorrectAnswers').textContent = `Respuestas correctas: ${correctAnswers}`;
-        document.getElementById('resultModal').style.display = 'block';
-    });
+        // Modal close functionality
+        const closeModal = document.getElementsByClassName('close')[0];
+        closeModal.onclick = function() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
 
-    let timerInterval;
-    function startTimer() {
-        let timeLeft = 30 * 60;
-        timerInterval = setInterval(() => {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const timerElement = document.getElementById('timer');
-            timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert("Tiempo terminado");
-                document.getElementById('submit').click();
-            } else {
-                timeLeft--;
-                if (timeLeft <= 600) {
-                    timerElement.className = 'red';
-                } else if (timeLeft <= 1200) {
-                    timerElement.className = 'orange';
-                }
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('resultModal')) {
+                document.getElementById('resultModal').style.display = 'none';
             }
-        }, 1000);
-    }
+        }
 
-    function detectFocusLoss() {
-        window.addEventListener('blur', () => {
-            alert("Cambio de ventana detectado. No manipules la evaluación.");
+        document.addEventListener("contextmenu", function(e){
+            e.preventDefault();
+            updateCaptureCount();
+        }, false);
+
+        function startTimer() {
+            timer = setInterval(function() {
+                timeLeft--;
+                const timerElement = document.getElementById('timer');
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                timerElement.innerText = `${minutes}:${seconds}`;
+
+                if (timeLeft <= 600) {
+                    timerElement.style.backgroundColor = 'red';
+                } else if (timeLeft <= 1200) {
+                    timerElement.style.backgroundColor = 'orange';
+                } else {
+                    timerElement.style.backgroundColor = 'green';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateCaptureCount() {
+            manipulationCount++;
+        }
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                updateCaptureCount();
+            }
         });
-    }
 
-    document.querySelector('.close').addEventListener('click', () => {
-        document.getElementById('resultModal').style.display = 'none';
-    });
+        window.addEventListener('pagehide', function() {
+            updateCaptureCount();
+        });
 
-    window.onload = function() {
-        initQuiz();
-        displayQuiz();
-        document.getElementById('infoModal').style.display = 'block';
-        detectFocusLoss();
-    };
-</script>
+        window.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            updateCaptureCount();
+        });
 
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                updateCaptureCount();
+            }
+        });
+
+        window.onload = function() {
+            document.getElementById('infoModal').style.display = 'block';
+        }
+    </script>
 </body>
 </html>
