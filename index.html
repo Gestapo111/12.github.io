@@ -5,549 +5,445 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación Unidad 12: Legislación Ambiental</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        #timer {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: #f2f2f2;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 18px;
-            border-radius: 5px;
-        }
-        .hidden {
-            display: none;
-        }
-        .question {
-            margin-bottom: 20px;
-        }
-        .question h3 {
-            margin-bottom: 10px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        #resultsModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 500;
-        }
+        body { font-family: Arial, sans-serif; }
+        .quiz-container { display: none; }
+        .question { margin-bottom: 20px; }
+        .options { list-style-type: none; padding: 0; }
+        #timer { font-weight: bold; padding: 10px; }
+        h2 { color: #333; }
+        #resultModal { display: none; position: fixed; z-index: 1; padding-top: 100px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="timer" class="hidden">Tiempo restante: <span id="time">30:00</span></div>
-
-    <div class="container">
-        <div id="studentInfoForm">
-            <h2>Información del Estudiante</h2>
-            <form id="infoForm">
-                <label for="name">Nombre del Estudiante:</label>
-                <input type="text" id="name" required><br><br>
-                <label for="nie">NIE:</label>
-                <input type="text" id="nie" required><br><br>
-                <label for="unit">Unidad Evaluada:</label>
-                <input type="text" id="unit" value="Unidad 12: Legislación Ambiental" readonly><br><br>
-                <button type="submit">Iniciar Evaluación</button>
-            </form>
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Iniciar Evaluación</h2>
+            <label for="fullname">Nombre completo:</label>
+            <input type="text" id="fullname" name="fullname"><br><br>
+            <label for="nie">NIE:</label>
+            <input type="text" id="nie" name="nie"><br><br>
+            <button id="startQuiz">Comenzar</button>
         </div>
+    </div>
 
-        <div id="quiz" class="hidden">
-            <h2>Evaluación Unidad 12: Legislación Ambiental</h2>
+    <div class="quiz-container">
+        <div id="timer">30:00</div>
+        <div id="quiz"></div>
+        <button id="submit">Enviar</button>
+    </div>
 
-            <div id="questions-container"></div>
-
-            <button id="submitQuiz">OBTENER CALIFICACIÓN</button>
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Resultados de la Evaluación</h2>
+            <div id="modalName"></div>
+            <div id="modalNIE"></div>
+            <div id="modalDetails"></div>
+            <div id="modalIncorrectAnswers"></div>
+            <div id="manipulationCount"></div>
+            <div id="attemptCount"></div>
         </div>
-
-        <div id="resultsModal">
-            <h2>Resultados</h2>
-            <p id="date"></p>
-            <p id="timeTaken"></p>
-            <p id="unitEvaluated"></p>
-            <p id="studentName"></p>
-            <p id="studentNIE"></p>
-            <p id="score"></p>
-            <p id="incorrectAnswers"></p>
-            <button id="closeModal">Cerrar</button>
-        </div>
-
-        <div id="overlay"></div>
     </div>
 
     <script>
-        const nieList = ["4267837", "3850952", "3851018", "5032035", "19806181", "6297536", "2608724", "6262810", "4267838", "20162435", "3850923", "19806209", "4267828", "3850942"];
-        const maxTime = 30 * 60; // 30 minutos en segundos
-        let timeRemaining = maxTime;
-        const timerElement = document.getElementById('time');
-        let startTime;
-
-        const questions = [
-            // Indicador 12.1
+        const quizData = [
             {
-                id: 'q1',
-                indicator: 'Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.',
-                question: "¿Cuál es el principal objetivo del Título I de la Ley de Medio Ambiente en El Salvador?",
-                options: [
-                    { value: 'a', text: "Proteger, conservar y restaurar el medio ambiente." },
-                    { value: 'b', text: "Promover la industrialización en áreas rurales." },
-                    { value: 'c', text: "Facilitar el comercio internacional de recursos naturales." },
-                    { value: 'd', text: "Fomentar la urbanización de áreas protegidas." }
+                indicator: "Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.",
+                questions: [
+                    {
+                        question: "¿Qué importancia tiene la restauración de hábitats según la Ley de Conservación de la Vida Silvestre?",
+                        answers: [
+                            { text: "Es fundamental para recuperar poblaciones de especies amenazadas.", correct: true },
+                            { text: "Es opcional y solo se aplica en áreas urbanas.", correct: false },
+                            { text: "Es irrelevante para la conservación de la biodiversidad.", correct: false },
+                            { text: "Solo se aplica en reservas privadas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué medidas establece la Ley de Conservación de la Vida Silvestre para proteger las especies en peligro?",
+                        answers: [
+                            { text: "Creación de santuarios y reservas naturales.", correct: true },
+                            { text: "Facilitar la urbanización en hábitats críticos.", correct: false },
+                            { text: "Permitir la caza regulada de especies amenazadas.", correct: false },
+                            { text: "Promover el turismo masivo en áreas silvestres.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cómo contribuye la Ley de Conservación de la Vida Silvestre a la protección de los ecosistemas?",
+                        answers: [
+                            { text: "Estableciendo áreas protegidas y regulando el uso de los recursos naturales.", correct: true },
+                            { text: "Facilitando la explotación de recursos en áreas protegidas.", correct: false },
+                            { text: "Permitiendo la deforestación en zonas silvestres.", correct: false },
+                            { text: "Promoviendo la agricultura intensiva en áreas naturales.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es el objetivo principal de la Ley de Conservación de la Vida Silvestre?",
+                        answers: [
+                            { text: "Proteger la biodiversidad y garantizar la supervivencia de especies amenazadas.", correct: true },
+                            { text: "Facilitar la caza y pesca indiscriminada en áreas silvestres.", correct: false },
+                            { text: "Promover el desarrollo agrícola en zonas protegidas.", correct: false },
+                            { text: "Permitir la explotación de recursos naturales en reservas silvestres.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué papel juegan las comunidades locales en la implementación de la Ley de Conservación de la Vida Silvestre?",
+                        answers: [
+                            { text: "Son clave para la gestión y protección de áreas protegidas.", correct: true },
+                            { text: "Están excluidas de la toma de decisiones.", correct: false },
+                            { text: "Solo participan en actividades recreativas.", correct: false },
+                            { text: "Tienen un rol limitado en la conservación.", correct: false }
+                        ]
+                    }
                 ]
             },
             {
-                id: 'q2',
-                indicator: 'Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.',
-                question: "¿Qué principio fundamental establece el Título I de la Ley de Medio Ambiente?",
-                options: [
-                    { value: 'a', text: "El derecho de toda persona a un ambiente sano." },
-                    { value: 'b', text: "La obligación de las empresas de explotar los recursos naturales." },
-                    { value: 'c', text: "La responsabilidad de los ciudadanos de reciclar obligatoriamente." },
-                    { value: 'd', text: "La prohibición de actividades agrícolas en áreas urbanas." }
+                indicator: "Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.",
+                questions: [
+                    {
+                        question: "¿Qué regulaciones establece la Ley Forestal para la explotación de recursos forestales?",
+                        answers: [
+                            { text: "Requiere permisos y un plan de manejo para la tala y aprovechamiento forestal.", correct: true },
+                            { text: "Permite la tala libre sin restricciones en áreas rurales.", correct: false },
+                            { text: "Prohíbe toda actividad forestal en el país.", correct: false },
+                            { text: "Facilita la conversión de bosques en áreas urbanas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué medidas establece la Ley Forestal para la restauración de áreas deforestadas?",
+                        answers: [
+                            { text: "Reforestación y recuperación de suelos degradados.", correct: true },
+                            { text: "Conversión de áreas deforestadas en zonas industriales.", correct: false },
+                            { text: "Uso de pesticidas para eliminar especies nativas.", correct: false },
+                            { text: "Prohibición de la reforestación en áreas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué rol juegan los planes de manejo forestal en la Ley Forestal?",
+                        answers: [
+                            { text: "Son esenciales para asegurar el uso sostenible de los recursos forestales.", correct: true },
+                            { text: "Son opcionales y no tienen impacto en la gestión de los recursos.", correct: false },
+                            { text: "Facilitan la tala indiscriminada de árboles.", correct: false },
+                            { text: "Permiten la explotación de recursos sin control.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cómo contribuye la Ley Forestal a la conservación de la biodiversidad?",
+                        answers: [
+                            { text: "Promueve la protección de especies forestales nativas y sus hábitats.", correct: true },
+                            { text: "Fomenta la introducción de especies exóticas invasoras.", correct: false },
+                            { text: "Permite la caza y recolección indiscriminada en bosques protegidos.", correct: false },
+                            { text: "Facilita la conversión de bosques en áreas agrícolas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es el propósito principal de la Ley Forestal en El Salvador?",
+                        answers: [
+                            { text: "Promover la conservación y manejo sostenible de los recursos forestales.", correct: true },
+                            { text: "Facilitar la tala masiva para el desarrollo industrial.", correct: false },
+                            { text: "Permitir la deforestación para la expansión agrícola.", correct: false },
+                            { text: "Fomentar la urbanización en zonas boscosas.", correct: false }
+                        ]
+                    }
                 ]
             },
             {
-                id: 'q3',
-                indicator: 'Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.',
-                question: "¿Qué enfoque promueve la Ley de Medio Ambiente en cuanto al uso de los recursos naturales?",
-                options: [
-                    { value: 'a', text: "Uso sostenible y racional de los recursos naturales." },
-                    { value: 'b', text: "Explotación intensiva para el desarrollo económico." },
-                    { value: 'c', text: "Uso exclusivo de los recursos renovables." },
-                    { value: 'd', text: "Conservación estricta sin aprovechamiento." }
+                indicator: "Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).",
+                questions: [
+                    {
+                        question: "¿Cómo se categorizan las áreas protegidas según la Ley de Áreas Naturales Protegidas?",
+                        answers: [
+                            { text: "Parques nacionales, reservas biológicas y monumentos naturales.", correct: true },
+                            { text: "Áreas urbanas, zonas agrícolas y corredores industriales.", correct: false },
+                            { text: "Zonas comerciales, áreas recreativas y parques industriales.", correct: false },
+                            { text: "Áreas residenciales, zonas comerciales y espacios públicos.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué importancia tiene la educación ambiental según la Ley de Áreas Naturales Protegidas?",
+                        answers: [
+                            { text: "Es fundamental para fomentar la conservación y el uso sostenible de los recursos naturales.", correct: true },
+                            { text: "Es opcional y no tiene impacto en la gestión de las áreas protegidas.", correct: false },
+                            { text: "Se centra únicamente en la promoción del turismo en áreas protegidas.", correct: false },
+                            { text: "Es irrelevante para la conservación de las áreas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué medidas establece la Ley de Áreas Naturales Protegidas para la restauración de ecosistemas degradados?",
+                        answers: [
+                            { text: "La reforestación y recuperación de suelos en áreas afectadas.", correct: true },
+                            { text: "La expansión de áreas urbanas sobre tierras degradadas.", correct: false },
+                            { text: "El uso de químicos para acelerar el crecimiento vegetal.", correct: false },
+                            { text: "La eliminación de especies nativas en áreas afectadas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es el objetivo principal de la Ley de Áreas Naturales Protegidas?",
+                        answers: [
+                            { text: "Proteger y conservar la biodiversidad en áreas designadas.", correct: true },
+                            { text: "Promover la explotación de recursos naturales en áreas protegidas.", correct: false },
+                            { text: "Facilitar el acceso libre a las áreas protegidas para actividades recreativas.", correct: false },
+                            { text: "Permitir la urbanización controlada en zonas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué actividades están reguladas por la Ley de Áreas Naturales Protegidas?",
+                        answers: [
+                            { text: "Caza, pesca y explotación forestal dentro de las áreas protegidas.", correct: false },
+                            { text: "Construcción de infraestructuras para el turismo masivo.", correct: false },
+                            { text: "Investigación científica y actividades educativas.", correct: true },
+                            { text: "Agricultura intensiva y minería a cielo abierto.", correct: false }
+                        ]
+                    }
                 ]
             },
             {
-                id: 'q4',
-                indicator: 'Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.',
-                question: "¿Qué responsabilidades impone el Título I de la Ley de Medio Ambiente a las autoridades públicas?",
-                options: [
-                    { value: 'a', text: "Garantizar la protección y mejora del medio ambiente." },
-                    { value: 'b', text: "Promover la minería a cielo abierto en áreas protegidas." },
-                    { value: 'c', text: "Facilitar la deforestación controlada para la agricultura." },
-                    { value: 'd', text: "Permitir la urbanización en zonas costeras." }
+                indicator: "Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.",
+                questions: [
+                    {
+                        question: "¿Cómo contribuye el Corredor Biológico Mesoamericano a la conservación de la biodiversidad?",
+                        answers: [
+                            { text: "Manteniendo la conectividad entre diferentes ecosistemas.", correct: true },
+                            { text: "Prohibiendo todas las actividades humanas en la región.", correct: false },
+                            { text: "Permitiendo la caza regulada de especies en peligro.", correct: false },
+                            { text: "Desarrollando infraestructura en áreas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué beneficios aporta el Corredor Biológico Mesoamericano a las especies?",
+                        answers: [
+                            { text: "Permite el intercambio genético entre poblaciones aisladas.", correct: true },
+                            { text: "Aumenta la deforestación para la construcción de infraestructura.", correct: false },
+                            { text: "Limita el acceso de las especies a sus hábitats naturales.", correct: false },
+                            { text: "Promueve la urbanización de áreas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es el propósito principal del Corredor Biológico Mesoamericano?",
+                        answers: [
+                            { text: "Conectar áreas protegidas para facilitar el movimiento de especies.", correct: true },
+                            { text: "Fomentar la agricultura intensiva en la región.", correct: false },
+                            { text: "Promover el desarrollo urbano en zonas rurales.", correct: false },
+                            { text: "Facilitar la minería a gran escala en áreas biodiversas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué desafíos enfrenta la implementación del Corredor Biológico Mesoamericano?",
+                        answers: [
+                            { text: "La fragmentación del hábitat y la expansión agrícola.", correct: true },
+                            { text: "La falta de especies en la región.", correct: false },
+                            { text: "El exceso de áreas protegidas en la región.", correct: false },
+                            { text: "La disminución de la biodiversidad debido al turismo.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué rol juegan las comunidades locales en la gestión del Corredor Biológico Mesoamericano?",
+                        answers: [
+                            { text: "Participan activamente en la conservación y manejo sostenible de los recursos.", correct: true },
+                            { text: "Son excluidas de las decisiones sobre el uso de la tierra.", correct: false },
+                            { text: "Se les permite desarrollar actividades extractivas sin restricciones.", correct: false },
+                            { text: "Tienen un rol limitado en la protección de la biodiversidad.", correct: false }
+                        ]
+                    }
                 ]
             },
             {
-                id: 'q5',
-                indicator: 'Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.',
-                question: "¿Qué mecanismos establece la Ley de Medio Ambiente para la participación ciudadana?",
-                options: [
-                    { value: 'a', text: "Consultas públicas y acceso a la información ambiental." },
-                    { value: 'b', text: "Imposición de sanciones a quienes no participen." },
-                    { value: 'c', text: "Obligatoriedad de formar parte de comités ambientales." },
-                    { value: 'd', text: "Limitación de la participación a expertos en el área." }
-                ]
-            },
-            // Indicador 12.2
-            {
-                id: 'q6',
-                indicator: 'Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.',
-                question: "¿Cuál es el propósito principal del Corredor Biológico Mesoamericano?",
-                options: [
-                    { value: 'a', text: "Conectar áreas protegidas para facilitar el movimiento de especies." },
-                    { value: 'b', text: "Fomentar la agricultura intensiva en la región." },
-                    { value: 'c', text: "Promover el desarrollo urbano en zonas rurales." },
-                    { value: 'd', text: "Facilitar la minería a gran escala en áreas biodiversas." }
-                ]
-            },
-            {
-                id: 'q7',
-                indicator: 'Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.',
-                question: "¿Qué beneficios aporta el Corredor Biológico Mesoamericano a las especies?",
-                options: [
-                    { value: 'a', text: "Permite el intercambio genético entre poblaciones aisladas." },
-                    { value: 'b', text: "Aumenta la deforestación para la construcción de infraestructura." },
-                    { value: 'c', text: "Limita el acceso de las especies a sus hábitats naturales." },
-                    { value: 'd', text: "Promueve la urbanización de áreas protegidas." }
-                ]
-            },
-            {
-                id: 'q8',
-                indicator: 'Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.',
-                question: "¿Qué desafíos enfrenta la implementación del Corredor Biológico Mesoamericano?",
-                options: [
-                    { value: 'a', text: "La fragmentación del hábitat y la expansión agrícola." },
-                    { value: 'b', text: "La falta de especies en la región." },
-                    { value: 'c', text: "El exceso de áreas protegidas en la región." },
-                    { value: 'd', text: "La disminución de la biodiversidad debido al turismo." }
-                ]
-            },
-            {
-                id: 'q9',
-                indicator: 'Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.',
-                question: "¿Cómo contribuye el Corredor Biológico Mesoamericano a la conservación de la biodiversidad?",
-                options: [
-                    { value: 'a', text: "Manteniendo la conectividad entre diferentes ecosistemas." },
-                    { value: 'b', text: "Prohibiendo todas las actividades humanas en la región." },
-                    { value: 'c', text: "Permitiendo la caza regulada de especies en peligro." },
-                    { value: 'd', text: "Desarrollando infraestructura en áreas protegidas." }
+                indicator: "Indicador 12.1: Discute, analiza e interpreta con interés el Título I de la Ley de Medio Ambiente vigente en El Salvador.",
+                questions: [
+                    {
+                        question: "¿Qué responsabilidades impone el Título I de la Ley de Medio Ambiente a las autoridades públicas?",
+                        answers: [
+                            { text: "Garantizar la protección y mejora del medio ambiente.", correct: true },
+                            { text: "Promover la minería a cielo abierto en áreas protegidas.", correct: false },
+                            { text: "Facilitar la deforestación controlada para la agricultura.", correct: false },
+                            { text: "Permitir la urbanización en zonas costeras.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué principio fundamental establece el Título I de la Ley de Medio Ambiente?",
+                        answers: [
+                            { text: "El derecho de toda persona a un ambiente sano.", correct: true },
+                            { text: "La obligación de las empresas de explotar los recursos naturales.", correct: false },
+                            { text: "La responsabilidad de los ciudadanos de reciclar obligatoriamente.", correct: false },
+                            { text: "La prohibición de actividades agrícolas en áreas urbanas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es el principal objetivo del Título I de la Ley de Medio Ambiente en El Salvador?",
+                        answers: [
+                            { text: "Proteger, conservar y restaurar el medio ambiente.", correct: true },
+                            { text: "Promover la industrialización en áreas rurales.", correct: false },
+                            { text: "Facilitar el comercio internacional de recursos naturales.", correct: false },
+                            { text: "Fomentar la urbanización de áreas protegidas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué mecanismos establece la Ley de Medio Ambiente para la participación ciudadana?",
+                        answers: [
+                            { text: "Consultas públicas y acceso a la información ambiental.", correct: true },
+                            { text: "Imposición de sanciones a quienes no participen.", correct: false },
+                            { text: "Obligatoriedad de formar parte de comités ambientales.", correct: false },
+                            { text: "Limitación de la participación a expertos en el área.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué enfoque promueve la Ley de Medio Ambiente en cuanto al uso de los recursos naturales?",
+                        answers: [
+                            { text: "Uso sostenible y racional de los recursos naturales.", correct: true },
+                            { text: "Explotación intensiva para el desarrollo económico.", correct: false },
+                            { text: "Uso exclusivo de los recursos renovables.", correct: false },
+                            { text: "Conservación estricta sin aprovechamiento.", correct: false }
+                        ]
+                    }
                 ]
             },
             {
-                id: 'q10',
-                indicator: 'Indicador 12.2: Indaga y describe con interés la importancia del Corredor Biológico Mesoamericano en la región centroamericana.',
-                question: "¿Qué rol juegan las comunidades locales en la gestión del Corredor Biológico Mesoamericano?",
-                options: [
-                    { value: 'a', text: "Participan activamente en la conservación y manejo sostenible de los recursos." },
-                    { value: 'b', text: "Son excluidas de las decisiones sobre el uso de la tierra." },
-                    { value: 'c', text: "Se les permite desarrollar actividades extractivas sin restricciones." },
-                    { value: 'd', text: "Tienen un rol limitado en la protección de la biodiversidad." }
-                ]
-            },
-            // Indicador 12.3
-            {
-                id: 'q11',
-                indicator: 'Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).',
-                question: "¿Cuál es el objetivo principal de la Ley de Áreas Naturales Protegidas?",
-                options: [
-                    { value: 'a', text: "Proteger y conservar la biodiversidad en áreas designadas." },
-                    { value: 'b', text: "Promover la explotación de recursos naturales en áreas protegidas." },
-                    { value: 'c', text: "Facilitar el acceso libre a las áreas protegidas para actividades recreativas." },
-                    { value: 'd', text: "Permitir la urbanización controlada en zonas protegidas." }
-                ]
-            },
-            {
-                id: 'q12',
-                indicator: 'Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).',
-                question: "¿Qué actividades están reguladas por la Ley de Áreas Naturales Protegidas?",
-                options: [
-                    { value: 'a', text: "Caza, pesca y explotación forestal dentro de las áreas protegidas." },
-                    { value: 'b', text: "Construcción de infraestructuras para el turismo masivo." },
-                    { value: 'c', text: "Investigación científica y actividades educativas." },
-                    { value: 'd', text: "Agricultura intensiva y minería a cielo abierto." }
-                ]
-            },
-            {
-                id: 'q13',
-                indicator: 'Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).',
-                question: "¿Cómo se categorizan las áreas protegidas según la Ley de Áreas Naturales Protegidas?",
-                options: [
-                    { value: 'a', text: "Parques nacionales, reservas biológicas y monumentos naturales." },
-                    { value: 'b', text: "Áreas urbanas, zonas agrícolas y corredores industriales." },
-                    { value: 'c', text: "Zonas comerciales, áreas recreativas y parques industriales." },
-                    { value: 'd', text: "Áreas residenciales, zonas comerciales y espacios públicos." }
-                ]
-            },
-            {
-                id: 'q14',
-                indicator: 'Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).',
-                question: "¿Qué medidas establece la Ley de Áreas Naturales Protegidas para la restauración de ecosistemas degradados?",
-                options: [
-                    { value: 'a', text: "La reforestación y recuperación de suelos en áreas afectadas." },
-                    { value: 'b', text: "La expansión de áreas urbanas sobre tierras degradadas." },
-                    { value: 'c', text: "El uso de químicos para acelerar el crecimiento vegetal." },
-                    { value: 'd', text: "La eliminación de especies nativas en áreas afectadas." }
-                ]
-            },
-            {
-                id: 'q15',
-                indicator: 'Indicador 12.3: Discute, analiza e interpreta con interés el Capítulo I, II, III y IV de la Ley de Áreas Naturales Protegidas (ANP).',
-                question: "¿Qué importancia tiene la educación ambiental según la Ley de Áreas Naturales Protegidas?",
-                options: [
-                    { value: 'a', text: "Es fundamental para fomentar la conservación y el uso sostenible de los recursos naturales." },
-                    { value: 'b', text: "Es opcional y no tiene impacto en la gestión de las áreas protegidas." },
-                    { value: 'c', text: "Se centra únicamente en la promoción del turismo en áreas protegidas." },
-                    { value: 'd', text: "Es irrelevante para la conservación de las áreas protegidas." }
-                ]
-            },
-            // Indicador 12.4
-            {
-                id: 'q16',
-                indicator: 'Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.',
-                question: "¿Cuál es el propósito principal de la Ley Forestal en El Salvador?",
-                options: [
-                    { value: 'a', text: "Promover la conservación y manejo sostenible de los recursos forestales." },
-                    { value: 'b', text: "Facilitar la tala masiva para el desarrollo industrial." },
-                    { value: 'c', text: "Permitir la deforestación para la expansión agrícola." },
-                    { value: 'd', text: "Fomentar la urbanización en zonas boscosas." }
-                ]
-            },
-            {
-                id: 'q17',
-                indicator: 'Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.',
-                question: "¿Qué regulaciones establece la Ley Forestal para la explotación de recursos forestales?",
-                options: [
-                    { value: 'a', text: "Requiere permisos y un plan de manejo para la tala y aprovechamiento forestal." },
-                    { value: 'b', text: "Permite la tala libre sin restricciones en áreas rurales." },
-                    { value: 'c', text: "Prohíbe toda actividad forestal en el país." },
-                    { value: 'd', text: "Facilita la conversión de bosques en áreas urbanas." }
-                ]
-            },
-            {
-                id: 'q18',
-                indicator: 'Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.',
-                question: "¿Cómo contribuye la Ley Forestal a la conservación de la biodiversidad?",
-                options: [
-                    { value: 'a', text: "Promueve la protección de especies forestales nativas y sus hábitats." },
-                    { value: 'b', text: "Fomenta la introducción de especies exóticas invasoras." },
-                    { value: 'c', text: "Permite la caza y recolección indiscriminada en bosques protegidos." },
-                    { value: 'd', text: "Facilita la conversión de bosques en áreas agrícolas." }
-                ]
-            },
-            {
-                id: 'q19',
-                indicator: 'Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.',
-                question: "¿Qué rol juegan los planes de manejo forestal en la Ley Forestal?",
-                options: [
-                    { value: 'a', text: "Son esenciales para asegurar el uso sostenible de los recursos forestales." },
-                    { value: 'b', text: "Son opcionales y no tienen impacto en la gestión de los recursos." },
-                    { value: 'c', text: "Facilitan la tala indiscriminada de árboles." },
-                    { value: 'd', text: "Permiten la explotación de recursos sin control." }
-                ]
-            },
-            {
-                id: 'q20',
-                indicator: 'Indicador 12.4: Discute, analiza e interpreta con responsabilidad el Capítulo I, II, III y IV de la Ley Forestal en El Salvador.',
-                question: "¿Qué medidas establece la Ley Forestal para la restauración de áreas deforestadas?",
-                options: [
-                    { value: 'a', text: "Reforestación y recuperación de suelos degradados." },
-                    { value: 'b', text: "Conversión de áreas deforestadas en zonas industriales." },
-                    { value: 'c', text: "Uso de pesticidas para eliminar especies nativas." },
-                    { value: 'd', text: "Prohibición de la reforestación en áreas protegidas." }
-                ]
-            },
-            // Indicador 12.5
-            {
-                id: 'q21',
-                indicator: 'Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.',
-                question: "¿Cuál es la función principal del Servicio de Parques Nacionales y Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Proteger y gestionar las áreas protegidas y la vida silvestre." },
-                    { value: 'b', text: "Promover la caza deportiva en áreas protegidas." },
-                    { value: 'c', text: "Facilitar el desarrollo urbano en parques nacionales." },
-                    { value: 'd', text: "Permitir la explotación de recursos en reservas naturales." }
-                ]
-            },
-            {
-                id: 'q22',
-                indicator: 'Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.',
-                question: "¿Qué actividades regula el Servicio de Parques Nacionales y Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Caza, pesca, turismo y conservación en áreas protegidas." },
-                    { value: 'b', text: "Urbanización y desarrollo industrial en parques nacionales." },
-                    { value: 'c', text: "Agricultura intensiva en reservas naturales." },
-                    { value: 'd', text: "Minería a gran escala en áreas silvestres." }
-                ]
-            },
-            {
-                id: 'q23',
-                indicator: 'Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.',
-                question: "¿Cómo contribuye el Servicio de Parques Nacionales y Vida Silvestre a la conservación de la biodiversidad?",
-                options: [
-                    { value: 'a', text: "Implementando programas de protección y manejo sostenible de especies y hábitats." },
-                    { value: 'b', text: "Facilitando la extracción de recursos en áreas protegidas." },
-                    { value: 'c', text: "Promoviendo la expansión agrícola en zonas protegidas." },
-                    { value: 'd', text: "Permitiendo la caza sin restricciones en parques nacionales." }
-                ]
-            },
-            {
-                id: 'q24',
-                indicator: 'Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.',
-                question: "¿Qué rol juega la educación ambiental en las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Es fundamental para fomentar la conciencia y participación en la conservación." },
-                    { value: 'b', text: "Es opcional y se enfoca solo en la promoción del turismo." },
-                    { value: 'c', text: "Se limita a la capacitación de guías turísticos." },
-                    { value: 'd', text: "Es irrelevante para las actividades de conservación." }
-                ]
-            },
-            {
-                id: 'q25',
-                indicator: 'Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.',
-                question: "¿Cómo se financian las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "A través de fondos públicos, donaciones y tarifas de entrada a los parques." },
-                    { value: 'b', text: "Exclusivamente a través de la venta de terrenos protegidos." },
-                    { value: 'c', text: "Principalmente mediante la extracción de recursos naturales." },
-                    { value: 'd', text: "Únicamente a través de subsidios agrícolas." }
-                ]
-            },
-            // Indicador 12.6
-            {
-                id: 'q26',
-                indicator: 'Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.',
-                question: "¿Cuál es el objetivo principal de la Ley de Conservación de la Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Proteger la biodiversidad y garantizar la supervivencia de especies amenazadas." },
-                    { value: 'b', text: "Facilitar la caza y pesca indiscriminada en áreas silvestres." },
-                    { value: 'c', text: "Promover el desarrollo agrícola en zonas protegidas." },
-                    { value: 'd', text: "Permitir la explotación de recursos naturales en reservas silvestres." }
-                ]
-            },
-            {
-                id: 'q27',
-                indicator: 'Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.',
-                question: "¿Qué medidas establece la Ley de Conservación de la Vida Silvestre para proteger las especies en peligro?",
-                options: [
-                    { value: 'a', text: "Creación de santuarios y reservas naturales." },
-                    { value: 'b', text: "Facilitar la urbanización en hábitats críticos." },
-                    { value: 'c', text: "Permitir la caza regulada de especies amenazadas." },
-                    { value: 'd', text: "Promover el turismo masivo en áreas silvestres." }
-                ]
-            },
-            {
-                id: 'q28',
-                indicator: 'Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.',
-                question: "¿Cómo contribuye la Ley de Conservación de la Vida Silvestre a la protección de los ecosistemas?",
-                options: [
-                    { value: 'a', text: "Estableciendo áreas protegidas y regulando el uso de los recursos naturales." },
-                    { value: 'b', text: "Facilitando la explotación de recursos en áreas protegidas." },
-                    { value: 'c', text: "Permitiendo la deforestación en zonas silvestres." },
-                    { value: 'd', text: "Promoviendo la agricultura intensiva en áreas naturales." }
-                ]
-            },
-            {
-                id: 'q29',
-                indicator: 'Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.',
-                question: "¿Qué importancia tiene la restauración de hábitats según la Ley de Conservación de la Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Es fundamental para recuperar poblaciones de especies amenazadas." },
-                    { value: 'b', text: "Es opcional y solo se aplica en áreas urbanas." },
-                    { value: 'c', text: "Es irrelevante para la conservación de la biodiversidad." },
-                    { value: 'd', text: "Solo se aplica en reservas privadas." }
-                ]
-            },
-            {
-                id: 'q30',
-                indicator: 'Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.',
-                question: "¿Qué papel juegan las comunidades locales en la implementación de la Ley de Conservación de la Vida Silvestre?",
-                options: [
-                    { value: 'a', text: "Son clave para la gestión y protección de áreas protegidas." },
-                    { value: 'b', text: "Están excluidas de la toma de decisiones." },
-                    { value: 'c', text: "Solo participan en actividades recreativas." },
-                    { value: 'd', text: "Tienen un rol limitado en la conservación." }
+                indicator: "Indicador 12.5: Investiga con interés la función del Servicio de Parques Nacionales y Vida Silvestre.",
+                questions: [
+                    {
+                        question: "¿Qué rol juega la educación ambiental en las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
+                        answers: [
+                            { text: "Es fundamental para fomentar la conciencia y participación en la conservación.", correct: true },
+                            { text: "Es opcional y se enfoca solo en la promoción del turismo.", correct: false },
+                            { text: "Se limita a la capacitación de guías turísticos.", correct: false },
+                            { text: "Es irrelevante para las actividades de conservación.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cuál es la función principal del Servicio de Parques Nacionales y Vida Silvestre?",
+                        answers: [
+                            { text: "Proteger y gestionar las áreas protegidas y la vida silvestre.", correct: true },
+                            { text: "Promover la caza deportiva en áreas protegidas.", correct: false },
+                            { text: "Facilitar el desarrollo urbano en parques nacionales.", correct: false },
+                            { text: "Permitir la explotación de recursos en reservas naturales.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cómo se financian las actividades del Servicio de Parques Nacionales y Vida Silvestre?",
+                        answers: [
+                            { text: "A través de fondos públicos, donaciones y tarifas de entrada a los parques.", correct: true },
+                            { text: "Exclusivamente a través de la venta de terrenos protegidos.", correct: false },
+                            { text: "Principalmente mediante la extracción de recursos naturales.", correct: false },
+                            { text: "Únicamente a través de subsidios agrícolas.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Qué actividades regula el Servicio de Parques Nacionales y Vida Silvestre?",
+                        answers: [
+                            { text: "Caza, pesca, turismo y conservación en áreas protegidas.", correct: true },
+                            { text: "Urbanización y desarrollo industrial en parques nacionales.", correct: false },
+                            { text: "Agricultura intensiva en reservas naturales.", correct: false },
+                            { text: "Minería a gran escala en áreas silvestres.", correct: false }
+                        ]
+                    },
+                    {
+                        question: "¿Cómo contribuye el Servicio de Parques Nacionales y Vida Silvestre a la conservación de la biodiversidad?",
+                        answers: [
+                            { text: "Implementando programas de protección y manejo sostenible de especies y hábitats.", correct: true },
+                            { text: "Facilitando la extracción de recursos en áreas protegidas.", correct: false },
+                            { text: "Promoviendo la expansión agrícola en zonas protegidas.", correct: false },
+                            { text: "Permitiendo la caza sin restricciones en parques nacionales.", correct: false }
+                        ]
+                    }
                 ]
             }
         ];
 
-        const correctAnswerKeys = {
-            q1: 'a', q2: 'a', q3: 'a', q4: 'a', q5: 'a', q6: 'a', q7: 'a', q8: 'a', q9: 'a', q10: 'a',
-            q11: 'a', q12: 'c', q13: 'a', q14: 'a', q15: 'a', q16: 'a', q17: 'a', q18: 'a', q19: 'a', q20: 'a',
-            q21: 'a', q22: 'a', q23: 'a', q24: 'a', q25: 'a', q26: 'a', q27: 'a', q28: 'a', q29: 'a', q30: 'a'
-        };
+        const authorizedNIEs = [
+            "4267837", "3850952", "3851018", "5032035", "19806181",
+            "6297536", "2608724", "6262810", "4267838", "20162435",
+            "3850923", "19806209", "4267828", "3850942"
+        ];
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        function displayQuestions() {
-            const container = document.getElementById('questions-container');
-            const shuffledQuestions = shuffle([...questions]);
-
-            shuffledQuestions.forEach((q, index) => {
-                const questionElement = document.createElement('div');
-                questionElement.classList.add('question');
-                questionElement.innerHTML = `
-                    <h3>${q.indicator}</h3>
-                    <p>${index + 1}. ${q.question}</p>
-                    ${q.options.map(option => `
-                        <input type="radio" name="${q.id}" value="${option.value}" required> ${option.value}) ${option.text}<br>
-                    `).join('')}
-                `;
-                container.appendChild(questionElement);
+        // Displaying the quiz
+        function displayQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = '';
+            quizData.forEach((indicatorData, index) => {
+                let indicatorElement = document.createElement('h3');
+                indicatorElement.textContent = indicatorData.indicator;
+                quizContainer.appendChild(indicatorElement);
+                indicatorData.questions.forEach((q, i) => {
+                    let questionElement = document.createElement('div');
+                    questionElement.className = 'question';
+                    questionElement.innerHTML = `<strong>${i + 1}. ${q.question}</strong>`;
+                    let optionsElement = document.createElement('ul');
+                    optionsElement.className = 'options';
+                    q.answers.forEach((answer, j) => {
+                        let optionElement = document.createElement('li');
+                        optionElement.innerHTML = `<input type="radio" name="q${index}_${i}" value="${answer.correct}"> ${answer.text}`;
+                        optionsElement.appendChild(optionElement);
+                    });
+                    questionElement.appendChild(optionsElement);
+                    quizContainer.appendChild(questionElement);
+                });
             });
         }
 
-        function startTimer() {
-            document.getElementById('timer').classList.remove('hidden');
-            startTime = new Date();
-            const timerInterval = setInterval(() => {
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                if (timeRemaining === 0) {
-                    clearInterval(timerInterval);
-                    showResults("Tiempo agotado. No se pudo completar la evaluación.", []);
+        // Initialize the quiz
+        function initQuiz() {
+            document.getElementById('startQuiz').addEventListener('click', () => {
+                const nie = document.getElementById('nie').value;
+                if (!authorizedNIEs.includes(nie)) {
+                    alert("NIE no autorizado.");
+                    return;
                 }
-                timeRemaining--;
+                document.querySelector('.quiz-container').style.display = 'block';
+                document.getElementById('infoModal').style.display = 'none';
+                startTimer();
+            });
+        }
+
+        // Handle quiz submission
+        document.getElementById('submit').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            let correctAnswers = 0;
+            quizData.forEach((indicatorData, index) => {
+                indicatorData.questions.forEach((q, i) => {
+                    const selectedAnswer = document.querySelector(`input[name="q${index}_${i}"]:checked`);
+                    if (selectedAnswer && selectedAnswer.value === "true") {
+                        correctAnswers++;
+                    }
+                });
+            });
+            const score = (correctAnswers / quizData.reduce((acc, curr) => acc + curr.questions.length, 0)) * 10;
+            document.getElementById('modalDetails').textContent = `Tu calificación es: ${score.toFixed(2)} sobre 10`;
+            document.getElementById('modalIncorrectAnswers').textContent = `Respuestas correctas: ${correctAnswers}`;
+            document.getElementById('resultModal').style.display = 'block';
+        });
+
+        // Timer functionality
+        let timerInterval;
+        function startTimer() {
+            let timeLeft = 30 * 60;
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Tiempo terminado");
+                    document.getElementById('submit').click();
+                } else {
+                    timeLeft--;
+                }
             }, 1000);
         }
 
-        document.getElementById('infoForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const name = document.getElementById('name').value;
-            const nie = document.getElementById('nie').value;
-
-            if (!nieList.includes(nie)) {
-                alert("NIE no autorizado.");
-                return;
-            }
-
-            document.getElementById('studentInfoForm').classList.add('hidden');
-            document.getElementById('quiz').classList.remove('hidden');
-            displayQuestions();
-            startTimer();
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('resultModal').style.display = 'none';
         });
 
-        document.getElementById('submitQuiz').addEventListener('click', function () {
-            let correctAnswers = 0;
-            let incorrectAnswers = [];
-
-            questions.forEach(q => {
-                const selectedAnswer = document.querySelector(`input[name="${q.id}"]:checked`);
-                if (selectedAnswer) {
-                    if (selectedAnswer.value === correctAnswerKeys[q.id]) {
-                        correctAnswers++;
-                    } else {
-                        incorrectAnswers.push(`Pregunta ${q.id.substring(1)} incorrecta.`);
-                    }
-                }
-            });
-
-            const score = (correctAnswers / questions.length) * 10;
-            const endTime = new Date();
-            const timeTaken = Math.floor((endTime - startTime) / 1000); // Tiempo en segundos
-
-            showResults(`Calificación: ${score.toFixed(2)} / 10`, incorrectAnswers, timeTaken);
-        });
-
-        function showResults(scoreText, incorrectAnswers, timeTaken) {
-            const date = new Date();
-            const minutesTaken = Math.floor(timeTaken / 60);
-            const secondsTaken = timeTaken % 60;
-
-            document.getElementById('quiz').classList.add('hidden');
-            document.getElementById('resultsModal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-
-            document.getElementById('date').textContent = `Fecha: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-            document.getElementById('timeTaken').textContent = `Tiempo tomado: ${minutesTaken} minutos y ${secondsTaken} segundos`;
-            document.getElementById('unitEvaluated').textContent = `Unidad Evaluada: Unidad 12: Legislación Ambiental`;
-            document.getElementById('studentName').textContent = `Nombre del Estudiante: ${document.getElementById('name').value}`;
-            document.getElementById('studentNIE').textContent = `NIE: ${document.getElementById('nie').value}`;
-            document.getElementById('score').textContent = scoreText;
-            document.getElementById('incorrectAnswers').textContent = incorrectAnswers.join(', ');
-        }
-
-        document.getElementById('closeModal').addEventListener('click', function () {
-            document.getElementById('resultsModal').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
-        });
+        // Initial setup
+        window.onload = function() {
+            initQuiz();
+            displayQuiz();
+            document.getElementById('infoModal').style.display = 'block';
+        };
     </script>
 </body>
 </html>
