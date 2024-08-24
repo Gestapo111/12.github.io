@@ -5,51 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación Unidad 12: Legislación Ambiental</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .quiz-container { display: none; }
-        .question { margin-bottom: 20px; }
-        .options { list-style-type: none; padding: 0; }
-        #timer { font-weight: bold; padding: 10px; }
-        h2 { color: #333; }
-        #resultModal { display: none; position: fixed; z-index: 1; padding-top: 100px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .quiz-container {
+            display: none;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+        }
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #timer.green {
+            color: green;
+        }
+        #timer.orange {
+            color: orange;
+        }
+        #timer.red {
+            color: red;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Iniciar Evaluación</h2>
-            <label for="fullname">Nombre completo:</label>
-            <input type="text" id="fullname" name="fullname"><br><br>
-            <label for="nie">NIE:</label>
-            <input type="text" id="nie" name="nie"><br><br>
-            <button id="startQuiz">Comenzar</button>
-        </div>
-    </div>
 
-    <div class="quiz-container">
-        <div id="timer">30:00</div>
-        <div id="quiz"></div>
-        <button id="submit">Enviar</button>
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Ingrese su NIE para comenzar la evaluación</h2>
+        <input type="text" id="nie" placeholder="Ingrese su NIE">
+        <button id="startQuiz">Iniciar Evaluación</button>
     </div>
+</div>
 
-    <div id="resultModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Resultados de la Evaluación</h2>
-            <div id="modalName"></div>
-            <div id="modalNIE"></div>
-            <div id="modalDetails"></div>
-            <div id="modalIncorrectAnswers"></div>
-            <div id="manipulationCount"></div>
-            <div id="attemptCount"></div>
-        </div>
+<div class="quiz-container">
+    <div id="timer" class="green">30:00</div>
+    <div id="quiz"></div>
+    <button id="submit">Enviar Evaluación</button>
+</div>
+
+<div id="resultModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Resultado de la Evaluación</h2>
+        <p id="modalDetails"></p>
+        <p id="modalIncorrectAnswers"></p>
     </div>
+</div>
 
-    <script>
+<script>
         const quizData = [
             {
                 indicator: "Indicador 12.6: Investiga y explica adecuadamente los objetivos de la finalidad de la Ley de Conservación de la Vida Silvestre.",
@@ -353,97 +401,108 @@
             }
         ];
 
-        const authorizedNIEs = [
-            "4267837", "3850952", "3851018", "5032035", "19806181",
-            "6297536", "2608724", "6262810", "4267838", "20162435",
-            "3850923", "19806209", "4267828", "3850942"
-        ];
+         const authorizedNIEs = [
+        "4267837", "3850952", "3851018", "5032035", "19806181",
+        "6297536", "2608724", "6262810", "4267838", "20162435",
+        "3850923", "19806209", "4267828", "3850942"
+    ];
 
-        // Displaying the quiz
-        function displayQuiz() {
-            const quizContainer = document.getElementById('quiz');
-            quizContainer.innerHTML = '';
-            quizData.forEach((indicatorData, index) => {
-                let indicatorElement = document.createElement('h3');
-                indicatorElement.textContent = indicatorData.indicator;
-                quizContainer.appendChild(indicatorElement);
-                indicatorData.questions.forEach((q, i) => {
-                    let questionElement = document.createElement('div');
-                    questionElement.className = 'question';
-                    questionElement.innerHTML = `<strong>${i + 1}. ${q.question}</strong>`;
-                    let optionsElement = document.createElement('ul');
-                    optionsElement.className = 'options';
-                    q.answers.forEach((answer, j) => {
-                        let optionElement = document.createElement('li');
-                        optionElement.innerHTML = `<input type="radio" name="q${index}_${i}" value="${answer.correct}"> ${answer.text}`;
-                        optionsElement.appendChild(optionElement);
-                    });
-                    questionElement.appendChild(optionsElement);
-                    quizContainer.appendChild(questionElement);
+    function displayQuiz() {
+        const quizContainer = document.getElementById('quiz');
+        quizContainer.innerHTML = '';
+        quizData.forEach((indicatorData, index) => {
+            let indicatorElement = document.createElement('h3');
+            indicatorElement.textContent = indicatorData.indicator;
+            quizContainer.appendChild(indicatorElement);
+            indicatorData.questions.forEach((q, i) => {
+                let questionElement = document.createElement('div');
+                questionElement.className = 'question';
+                questionElement.innerHTML = `<strong>${i + 1}. ${q.question}</strong>`;
+                let optionsElement = document.createElement('ul');
+                optionsElement.className = 'options';
+                q.answers.forEach((answer, j) => {
+                    let optionElement = document.createElement('li');
+                    optionElement.innerHTML = `<input type="radio" name="q${index}_${i}" value="${answer.correct}"> ${answer.text}`;
+                    optionsElement.appendChild(optionElement);
                 });
+                questionElement.appendChild(optionsElement);
+                quizContainer.appendChild(questionElement);
             });
-        }
-
-        // Initialize the quiz
-        function initQuiz() {
-            document.getElementById('startQuiz').addEventListener('click', () => {
-                const nie = document.getElementById('nie').value;
-                if (!authorizedNIEs.includes(nie)) {
-                    alert("NIE no autorizado.");
-                    return;
-                }
-                document.querySelector('.quiz-container').style.display = 'block';
-                document.getElementById('infoModal').style.display = 'none';
-                startTimer();
-            });
-        }
-
-        // Handle quiz submission
-        document.getElementById('submit').addEventListener('click', () => {
-            clearInterval(timerInterval);
-            let correctAnswers = 0;
-            quizData.forEach((indicatorData, index) => {
-                indicatorData.questions.forEach((q, i) => {
-                    const selectedAnswer = document.querySelector(`input[name="q${index}_${i}"]:checked`);
-                    if (selectedAnswer && selectedAnswer.value === "true") {
-                        correctAnswers++;
-                    }
-                });
-            });
-            const score = (correctAnswers / quizData.reduce((acc, curr) => acc + curr.questions.length, 0)) * 10;
-            document.getElementById('modalDetails').textContent = `Tu calificación es: ${score.toFixed(2)} sobre 10`;
-            document.getElementById('modalIncorrectAnswers').textContent = `Respuestas correctas: ${correctAnswers}`;
-            document.getElementById('resultModal').style.display = 'block';
         });
+    }
 
-        // Timer functionality
-        let timerInterval;
-        function startTimer() {
-            let timeLeft = 30 * 60;
-            timerInterval = setInterval(() => {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                document.getElementById('timer').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    alert("Tiempo terminado");
-                    document.getElementById('submit').click();
-                } else {
-                    timeLeft--;
-                }
-            }, 1000);
-        }
-
-        document.querySelector('.close').addEventListener('click', () => {
-            document.getElementById('resultModal').style.display = 'none';
+    function initQuiz() {
+        document.getElementById('startQuiz').addEventListener('click', () => {
+            const nie = document.getElementById('nie').value;
+            if (!authorizedNIEs.includes(nie)) {
+                alert("NIE no autorizado.");
+                return;
+            }
+            document.querySelector('.quiz-container').style.display = 'block';
+            document.getElementById('infoModal').style.display = 'none';
+            startTimer();
         });
+    }
 
-        // Initial setup
-        window.onload = function() {
-            initQuiz();
-            displayQuiz();
-            document.getElementById('infoModal').style.display = 'block';
-        };
-    </script>
+    document.getElementById('submit').addEventListener('click', () => {
+        clearInterval(timerInterval);
+        let correctAnswers = 0;
+        quizData.forEach((indicatorData, index) => {
+            indicatorData.questions.forEach((q, i) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}_${i}"]:checked`);
+                if (selectedAnswer && selectedAnswer.value === "true") {
+                    correctAnswers++;
+                }
+            });
+        });
+        const totalQuestions = quizData.reduce((acc, curr) => acc + curr.questions.length, 0);
+        const score = (correctAnswers / totalQuestions) * 10;
+        document.getElementById('modalDetails').textContent = `Tu calificación es: ${score.toFixed(2)} sobre 10`;
+        document.getElementById('modalIncorrectAnswers').textContent = `Respuestas correctas: ${correctAnswers}`;
+        document.getElementById('resultModal').style.display = 'block';
+    });
+
+    let timerInterval;
+    function startTimer() {
+        let timeLeft = 30 * 60;
+        timerInterval = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("Tiempo terminado");
+                document.getElementById('submit').click();
+            } else {
+                timeLeft--;
+                if (timeLeft <= 600) {
+                    timerElement.className = 'red';
+                } else if (timeLeft <= 1200) {
+                    timerElement.className = 'orange';
+                }
+            }
+        }, 1000);
+    }
+
+    function detectFocusLoss() {
+        window.addEventListener('blur', () => {
+            alert("Cambio de ventana detectado. No manipules la evaluación.");
+        });
+    }
+
+    document.querySelector('.close').addEventListener('click', () => {
+        document.getElementById('resultModal').style.display = 'none';
+    });
+
+    window.onload = function() {
+        initQuiz();
+        displayQuiz();
+        document.getElementById('infoModal').style.display = 'block';
+        detectFocusLoss();
+    };
+</script>
+
 </body>
 </html>
